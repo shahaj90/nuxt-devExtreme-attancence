@@ -41,11 +41,38 @@
     <DxSearchPanel :visible="true" :width="240" />
     <DxPaging :page-size="10" />
     <DxPager :show-page-size-selector="true" :allowed-page-sizes="[10, 20, 50]" :show-info="true" />
-
-    <DxColumn data-field="dateGetToWork" caption="Date & Time Get to Work" />
-    <DxColumn data-field="dateOutOfOffice" caption="Date & Time Out of Office" />
-    <DxColumn data-field="dateReenterOffice" caption="Date & Time Reenter the Office" />
-    <DxColumn data-field="dateBackToWork" caption="Date & Time Back to Work" />
+    <DxColumn
+      data-field="newStartDateTime"
+      caption="Date & Time Get to Start Work"
+      :format="{
+        type: 'date',
+        format: 'dd/MM/yyyy HH:mm',
+      }"
+    />
+    <DxColumn
+      data-field="newOfficeOpeningDateTime"
+      caption="Date & Time Open of Office"
+      :format="{
+        type: 'date',
+        format: 'dd/MM/yyyy HH:mm',
+      }"
+    />
+    <DxColumn
+      data-field="newOfficeReEntryDateTime"
+      caption="Date & Time After Break the Office"
+      :format="{
+        type: 'date',
+        format: 'dd/MM/yyyy HH:mm',
+      }"
+    />
+    <DxColumn
+      data-field="newReturnWorkDateTime"
+      caption="Date & Time to Return Work"
+      :format="{
+        type: 'date',
+        format: 'dd/MM/yyyy HH:mm',
+      }"
+    />
     <DxColumn data-field="status" caption="Status" />
     <DxColumn data-field="type" caption="Type" />
 
@@ -69,7 +96,7 @@ import {
   DxPager,
   DxColumn,
 } from "devextreme-vue/data-grid";
-import type { AttendanceRecord } from "@/types/AttendanceRecord";
+import type { AttendanceRecord } from "@/types/Attendance";
 
 defineProps<{
   attendanceRecords: AttendanceRecord[];
@@ -77,7 +104,7 @@ defineProps<{
 
 // Define event emitter
 const emit = defineEmits<{
-  (e: "add-new-record"): void;
+  (e: "addNewRecord"): void;
   (e: "onEdit"): void;
 }>();
 
@@ -101,7 +128,7 @@ const onEdit = (record: AttendanceRecord) => {
 };
 
 const onAddNewRecord = (): void => {
-  emit("add-new-record");
+  emit("addNewRecord");
 };
 
 const onPrintGrid = () => {

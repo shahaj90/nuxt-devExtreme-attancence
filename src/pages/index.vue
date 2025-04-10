@@ -18,13 +18,13 @@
           data-field="id"
           editor-type="dxTextBox"
           :label="{ text: 'No. Kad Pengenalan' }"
-          :editor-options="{ stylingMode: 'outlined', placeholder: 'Masukkan No. KP' }"
+          :editor-options="{ stylingMode: 'outlined' }"
         />
         <DxSimpleItem
           data-field="name"
           editor-type="dxTextBox"
           :label="{ text: 'Nama' }"
-          :editor-options="{ stylingMode: 'outlined', placeholder: 'Masukkan Nama' }"
+          :editor-options="{ stylingMode: 'outlined' }"
         />
         <DxSimpleItem
           data-field="display"
@@ -33,7 +33,6 @@
           :editor-options="{
             items: ['Daily', 'Weekly'],
             stylingMode: 'outlined',
-            placeholder: 'Pilih Jenis Paparan',
           }"
         />
         <DxItem
@@ -43,38 +42,133 @@
           horizontal-alignment="left"
         />
       </DxForm>
-      <!-- <DxButtonItem data-field="display" :button-options="submitButtonOptions" />
-      <DxButton
-        text="Search"
-        type="default"
-        styling-mode="contained"
-        icon="search"
-        @click="onSearch"
-        class="mb-4"
-      /> -->
-
-      <!-- <div class="flex items-end justify-end mt-4">
-        <DxButton
-          text="Search"
-          type="default"
-          styling-mode="contained"
-          icon="search"
-          @click="onSearch"
-          class="mb-4"
-        />
-      </div> -->
     </fieldset>
 
     <!-- DataGrid with Export & Print -->
-    <h2 class="text-2xl font-semibold mb-4">List of Competency Owner Attendance Records</h2>
-
     <div>
+      <h2 class="text-2xl font-semibold mb-4">List of Competency Owner Attendance Records</h2>
       <DataGrid
-        :attendanceRecords="attendanceRecords"
-        @add-new-record="() => console.log(1)"
+        :attendanceRecords="attendanceStore.records"
+        @add-new-record="addNewRecord"
         @edit="onEdit"
       />
     </div>
+
+    <!-- Popup -->
+    <DxPopup
+      v-model:visible="popupVisible"
+      :width="700"
+      :height="600"
+      :show-title="true"
+      :drag-enabled="true"
+      :close-on-outside-click="true"
+    >
+      <template #default>
+        <fieldset
+          class="border border-gray-300 rounded-lg p-4 mb-6 relative bg-white w-full max-w-7xl mx-auto"
+        >
+          <legend class="font-semibold text-lg px-2 ml-2">Attendance Record Search</legend>
+          <DxForm
+            :form-data="form"
+            label-location="top"
+            :col-count="2"
+            :min-col-width="200"
+            :align-item-labels="true"
+            :show-colon-after-label="true"
+            class="search-form mb-4"
+          >
+            <DxSimpleItem
+              data-field="typeOfReason"
+              editor-type="dxTextBox"
+              :label="{ text: 'Types Of Reasons' }"
+              :editor-options="{ stylingMode: 'outlined' }"
+            />
+            <DxSimpleItem
+              data-field="reason"
+              editor-type="dxTextBox"
+              :label="{ text: 'Reason' }"
+              :editor-options="{ stylingMode: 'outlined' }"
+            />
+            <DxSimpleItem
+              data-field="newStartDateTime"
+              editor-type="dxDateBox"
+              :label="{ text: 'New Start Date & Time' }"
+              :editor-options="{
+                type: 'datetime',
+                displayFormat: 'dd/MM/yyyy HH:mm',
+                stylingMode: 'outlined',
+              }"
+            />
+            <DxSimpleItem
+              data-field="newOfficeOpeningDateTime"
+              editor-type="dxDateBox"
+              :label="{ text: 'New Office Opening Date & Time' }"
+              :editor-options="{
+                type: 'datetime',
+                displayFormat: 'dd/MM/yyyy HH:mm',
+                stylingMode: 'outlined',
+              }"
+            />
+            <DxSimpleItem
+              data-field="newOfficeReEntryDateTime"
+              editor-type="dxDateBox"
+              :label="{ text: 'New Office Re-Entry Date & Time' }"
+              :editor-options="{
+                type: 'datetime',
+                displayFormat: 'dd/MM/yyyy HH:mm',
+                stylingMode: 'outlined',
+              }"
+            />
+            <DxSimpleItem
+              data-field="newReturnWorkDateTime"
+              editor-type="dxDateBox"
+              :label="{ text: 'New Return to Work Date & Time' }"
+              :editor-options="{
+                type: 'datetime',
+                displayFormat: 'dd/MM/yyyy HH:mm',
+                stylingMode: 'outlined',
+              }"
+            />
+            <DxTextArea data-field="notes" :input-attr="{ 'aria-label': 'Notes' }" />
+
+            <DxSimpleItem
+              data-field="notes"
+              editor-type="dxTextArea"
+              :editor-options="{
+                height: 90,
+                stylingMode: 'outlined',
+              }"
+              :input-attr="{ 'aria-label': 'Notes' }"
+            />
+            <DxFileUploader accept="image/*"> </DxFileUploader>
+            <DxSimpleItem
+              data-field="file"
+              editor-type="dxFileUploader"
+              :editor-options="{
+                selectButtonText: 'Select file',
+                uploadButtonText: 'Upload file',
+                showFileList: false,
+                multiple: false,
+                accept: '*',
+              }"
+            />
+
+            <DxItem
+              :button-options="saveButtonOptions"
+              item-type="button"
+              css-class="mt-6"
+              horizontal-alignment="left"
+            />
+            <DxItem
+              :button-options="closeButtonOptions"
+              item-type="button"
+              css-class="mt-6"
+              horizontal-alignment="right"
+            />
+          </DxForm>
+        </fieldset>
+      </template>
+    </DxPopup>
   </div>
 </template>
 
@@ -83,21 +177,50 @@ useHead({
   title: "Attendance",
 });
 
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { DxItem } from "devextreme-vue/data-grid";
 import { DxForm, DxSimpleItem } from "devextreme-vue/form";
 import DataGrid from "@/components/ui/DataGrid.vue";
-import type { AttendanceRecord } from "@/types/AttendanceRecord";
+import type { AttendanceRecord, Form, SearchForm } from "@/types/Attendance";
 import { useHead } from "nuxt/app";
+import { DxPopup } from "devextreme-vue/popup";
+import { DxTextArea } from "devextreme-vue/text-area";
+import { DxFileUploader } from "devextreme-vue/file-uploader";
+import { useAttendanceStore } from "@/stores/attendance";
 
-interface SearchForm {
-  id: string;
-  name: string;
-  display: string;
-}
+const popupVisible = ref(false);
+const attendanceStore = useAttendanceStore();
+
+onMounted(() => {
+  attendanceStore.loadRecords(attendanceRecords.value);
+});
+
+const saveButtonOptions = {
+  text: "Save",
+  useSubmitBehavior: true,
+  type: "default",
+  stylingMode: "contained",
+  icon: "save",
+  class: "mt-4",
+  onClick: () => {
+    addRecord();
+  },
+};
+
+const closeButtonOptions = {
+  text: "Cancel",
+  useSubmitBehavior: true,
+  type: "danger",
+  stylingMode: "contained",
+  icon: "close",
+  class: "mt-4",
+  onClick: () => {
+    popupVisible.value = false;
+  },
+};
 
 const buttonOptions = {
-  text: "Submit the Form",
+  text: "Search",
   useSubmitBehavior: true,
   type: "default",
   stylingMode: "contained",
@@ -111,189 +234,283 @@ const buttonOptions = {
 const searchForm = ref<SearchForm>({
   id: "",
   name: "",
-  display: "Daily",
+  display: "",
+});
+
+const form = ref<Form>({
+  typeOfReason: "",
+  reason: "",
+  newStartDateTime: new Date(),
+  newOfficeOpeningDateTime: new Date(),
+  newOfficeReEntryDateTime: new Date(),
+  newReturnWorkDateTime: new Date(),
+  notes: "",
+  document: {
+    type: Object,
+    default: () => ({}) as File,
+  },
 });
 
 const attendanceRecords = ref<AttendanceRecord[]>([
   {
     id: 1,
-    dateGetToWork: "2025-04-10 08:00",
-    dateOutOfOffice: "2025-04-10 12:00",
-    dateReenterOffice: "2025-04-10 13:00",
-    dateBackToWork: "2025-04-10 17:00",
-    status: "Presence",
-    type: "Non-compliance",
+    typeOfReason: "Medical",
+    reason: "Recovering from surgery",
+    newStartDateTime: new Date("2025-04-15T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-20T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-25T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-26T09:00:00"),
+    notes: "Doctor advised extended rest.",
+    document: new File([""], "medical_report.pdf"),
+    status: "Pending",
+    type: "Request",
   },
   {
     id: 2,
-    dateGetToWork: "2025-04-10 09:00",
-    dateOutOfOffice: "2025-04-10 12:30",
-    dateReenterOffice: "2025-04-10 13:30",
-    dateBackToWork: "2025-04-10 18:00",
-    status: "Presence",
-    type: "Compliance",
+    typeOfReason: "Personal",
+    reason: "Family emergency",
+    newStartDateTime: new Date("2025-04-12T08:30:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-18T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-21T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-22T09:00:00"),
+    notes: "Need time to resolve family matters.",
+    document: new File([""], "family_leave_doc.pdf"),
+    status: "Approved",
+    type: "Request",
   },
   {
     id: 3,
-    dateGetToWork: "2025-04-09 08:15",
-    dateOutOfOffice: "2025-04-09 12:15",
-    dateReenterOffice: "2025-04-09 13:05",
-    dateBackToWork: "2025-04-09 17:10",
-    status: "Presence",
-    type: "Compliance",
+    typeOfReason: "Relocation",
+    reason: "Moving to new city",
+    newStartDateTime: new Date("2025-04-10T10:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-15T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-19T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-20T09:00:00"),
+    notes: "Awaiting logistics completion.",
+    document: new File([""], "relocation_proof.pdf"),
+    status: "Pending",
+    type: "Request",
   },
   {
     id: 4,
-    dateGetToWork: "2025-04-09 09:30",
-    dateOutOfOffice: "2025-04-09 12:45",
-    dateReenterOffice: "2025-04-09 14:00",
-    dateBackToWork: "2025-04-09 18:30",
-    status: "Late",
-    type: "Non-compliance",
+    typeOfReason: "Bereavement",
+    reason: "Loss in family",
+    newStartDateTime: new Date("2025-04-05T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-12T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-15T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-16T09:00:00"),
+    notes: "Traveling out of country.",
+    document: new File([""], "bereavement_doc.pdf"),
+    status: "Approved",
+    type: "Request",
   },
   {
     id: 5,
-    dateGetToWork: "2025-04-08 07:45",
-    dateOutOfOffice: "2025-04-08 11:45",
-    dateReenterOffice: "2025-04-08 12:45",
-    dateBackToWork: "2025-04-08 16:30",
-    status: "Early",
-    type: "Compliance",
+    typeOfReason: "Medical",
+    reason: "Mental health break",
+    newStartDateTime: new Date("2025-04-08T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-14T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-18T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-19T09:00:00"),
+    notes: "Recommendation from therapist.",
+    document: new File([""], "mental_health_note.pdf"),
+    status: "Pending",
+    type: "Request",
   },
   {
     id: 6,
-    dateGetToWork: "2025-04-08 08:30",
-    dateOutOfOffice: "2025-04-08 12:20",
-    dateReenterOffice: "2025-04-08 13:25",
-    dateBackToWork: "2025-04-08 17:45",
-    status: "Presence",
-    type: "Non-compliance",
+    typeOfReason: "Vacation",
+    reason: "Pre-approved annual leave",
+    newStartDateTime: new Date("2025-04-20T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-27T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-30T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-05-01T09:00:00"),
+    notes: "Trip with family.",
+    document: new File([""], "vacation_plan.pdf"),
+    status: "Approved",
+    type: "Leave",
   },
   {
     id: 7,
-    dateGetToWork: "2025-04-07 08:05",
-    dateOutOfOffice: "2025-04-07 12:10",
-    dateReenterOffice: "2025-04-07 13:15",
-    dateBackToWork: "2025-04-07 17:05",
-    status: "Presence",
-    type: "Compliance",
+    typeOfReason: "COVID-19",
+    reason: "Tested positive",
+    newStartDateTime: new Date("2025-04-01T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-10T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-15T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-16T09:00:00"),
+    notes: "Under isolation.",
+    document: new File([""], "covid_positive_report.pdf"),
+    status: "Pending",
+    type: "Request",
   },
   {
     id: 8,
-    dateGetToWork: "2025-04-07 10:15",
-    dateOutOfOffice: "2025-04-07 13:00",
-    dateReenterOffice: "2025-04-07 14:30",
-    dateBackToWork: "2025-04-07 19:00",
-    status: "Late",
-    type: "Non-compliance",
+    typeOfReason: "Childcare",
+    reason: "Newborn care",
+    newStartDateTime: new Date("2025-04-03T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-17T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-24T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-25T09:00:00"),
+    notes: "Maternity leave extension.",
+    document: new File([""], "childcare_letter.pdf"),
+    status: "Approved",
+    type: "Leave",
   },
   {
     id: 9,
-    dateGetToWork: "2025-04-06 08:00",
-    dateOutOfOffice: "2025-04-06 12:00",
-    dateReenterOffice: "2025-04-06 13:00",
-    dateBackToWork: "2025-04-06 17:00",
-    status: "Presence",
-    type: "Compliance",
+    typeOfReason: "Education",
+    reason: "Attending a short course",
+    newStartDateTime: new Date("2025-04-06T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-14T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-18T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-19T09:00:00"),
+    notes: "Certificate course for upskilling.",
+    document: new File([""], "course_enrollment.pdf"),
+    status: "Pending",
+    type: "Request",
   },
   {
     id: 10,
-    dateGetToWork: "2025-04-06 08:45",
-    dateOutOfOffice: "2025-04-06 12:30",
-    dateReenterOffice: "2025-04-06 13:45",
-    dateBackToWork: "2025-04-06 17:30",
-    status: "Presence",
-    type: "Compliance",
+    typeOfReason: "Marriage",
+    reason: "Getting married",
+    newStartDateTime: new Date("2025-04-10T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-20T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-25T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-26T09:00:00"),
+    notes: "Requested wedding leave.",
+    document: new File([""], "wedding_invitation.pdf"),
+    status: "Approved",
+    type: "Leave",
   },
   {
     id: 11,
-    dateGetToWork: "2025-04-05 07:30",
-    dateOutOfOffice: "2025-04-05 11:45",
-    dateReenterOffice: "2025-04-05 12:30",
-    dateBackToWork: "2025-04-05 16:00",
-    status: "Early",
-    type: "Compliance",
+    typeOfReason: "Legal",
+    reason: "Court hearing",
+    newStartDateTime: new Date("2025-04-05T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-10T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-12T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-13T09:00:00"),
+    notes: "Legal obligation.",
+    document: new File([""], "court_notice.pdf"),
+    status: "Pending",
+    type: "Request",
   },
   {
     id: 12,
-    dateGetToWork: "2025-04-05 09:45",
-    dateOutOfOffice: "2025-04-05 13:15",
-    dateReenterOffice: "2025-04-05 14:45",
-    dateBackToWork: "2025-04-05 19:15",
-    status: "Late",
-    type: "Non-compliance",
+    typeOfReason: "Travel",
+    reason: "Visa appointment",
+    newStartDateTime: new Date("2025-04-07T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-12T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-15T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-16T09:00:00"),
+    notes: "Travel plans confirmed.",
+    document: new File([""], "visa_confirmation.pdf"),
+    status: "Approved",
+    type: "Request",
   },
   {
     id: 13,
-    dateGetToWork: "2025-04-04 08:20",
-    dateOutOfOffice: "2025-04-04 12:25",
-    dateReenterOffice: "2025-04-04 13:30",
-    dateBackToWork: "2025-04-04 17:45",
-    status: "Presence",
-    type: "Compliance",
+    typeOfReason: "Medical",
+    reason: "Dental surgery",
+    newStartDateTime: new Date("2025-04-04T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-08T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-10T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-11T09:00:00"),
+    notes: "Recovery needed.",
+    document: new File([""], "dental_surgery_note.pdf"),
+    status: "Approved",
+    type: "Request",
   },
   {
     id: 14,
-    dateGetToWork: "2025-04-04 08:00",
-    dateOutOfOffice: "2025-04-04 12:00",
-    dateReenterOffice: "2025-04-04 13:00",
-    dateBackToWork: "2025-04-04 15:00",
-    status: "Half Day",
-    type: "Non-compliance",
+    typeOfReason: "Religious",
+    reason: "Pilgrimage travel",
+    newStartDateTime: new Date("2025-04-18T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-26T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-30T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-05-01T09:00:00"),
+    notes: "Spiritual commitment.",
+    document: new File([""], "pilgrimage_letter.pdf"),
+    status: "Pending",
+    type: "Leave",
   },
   {
     id: 15,
-    dateGetToWork: "2025-04-03 08:10",
-    dateOutOfOffice: "2025-04-03 12:15",
-    dateReenterOffice: "2025-04-03 13:20",
-    dateBackToWork: "2025-04-03 17:10",
-    status: "Presence",
-    type: "Compliance",
+    typeOfReason: "Personal",
+    reason: "House renovation",
+    newStartDateTime: new Date("2025-04-09T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-16T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-20T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-21T09:00:00"),
+    notes: "Noise disruption at home.",
+    document: new File([""], "renovation_invoice.pdf"),
+    status: "Approved",
+    type: "Request",
   },
   {
     id: 16,
-    dateGetToWork: "2025-04-02 08:00",
-    dateOutOfOffice: "2025-04-02 12:00",
-    dateReenterOffice: "2025-04-02 13:00",
-    dateBackToWork: "2025-04-02 17:00",
-    status: "Presence",
-    type: "Compliance",
+    typeOfReason: "Weather",
+    reason: "Flooding in area",
+    newStartDateTime: new Date("2025-04-01T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-06T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-10T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-11T09:00:00"),
+    notes: "Unsafe commute.",
+    document: new File([""], "weather_alert.pdf"),
+    status: "Approved",
+    type: "Request",
   },
   {
     id: 17,
-    dateGetToWork: "2025-04-02 08:05",
-    dateOutOfOffice: "2025-04-02 12:10",
-    dateReenterOffice: "2025-04-02 13:05",
-    dateBackToWork: "2025-04-02 17:00",
-    status: "Presence",
-    type: "Compliance",
+    typeOfReason: "Transport",
+    reason: "Vehicle breakdown",
+    newStartDateTime: new Date("2025-04-02T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-07T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-09T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-10T09:00:00"),
+    notes: "Awaiting repairs.",
+    document: new File([""], "repair_receipt.pdf"),
+    status: "Pending",
+    type: "Request",
   },
   {
     id: 18,
-    dateGetToWork: "2025-04-02 09:50",
-    dateOutOfOffice: "2025-04-02 13:30",
-    dateReenterOffice: "2025-04-02 14:45",
-    dateBackToWork: "2025-04-02 19:30",
-    status: "Late",
-    type: "Non-compliance",
+    typeOfReason: "Other",
+    reason: "Internet outage",
+    newStartDateTime: new Date("2025-04-03T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-08T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-10T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-11T09:00:00"),
+    notes: "Network issues at home.",
+    document: new File([""], "outage_report.pdf"),
+    status: "Approved",
+    type: "Request",
   },
   {
     id: 19,
-    dateGetToWork: "2025-04-01 07:55",
-    dateOutOfOffice: "2025-04-01 11:50",
-    dateReenterOffice: "2025-04-01 12:55",
-    dateBackToWork: "2025-04-01 16:45",
-    status: "Early",
-    type: "Compliance",
+    typeOfReason: "Caregiving",
+    reason: "Taking care of elderly parent",
+    newStartDateTime: new Date("2025-04-06T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-13T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-17T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-18T09:00:00"),
+    notes: "Temporary caregiver unwell.",
+    document: new File([""], "caregiving_note.pdf"),
+    status: "Pending",
+    type: "Request",
   },
   {
     id: 20,
-    dateGetToWork: "2025-04-01 08:30",
-    dateOutOfOffice: "2025-04-01 12:45",
-    dateReenterOffice: "2025-04-01 13:50",
-    dateBackToWork: "2025-04-01 17:30",
-    status: "Presence",
-    type: "Non-compliance",
+    typeOfReason: "Military",
+    reason: "Reservist duty",
+    newStartDateTime: new Date("2025-04-05T09:00:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-15T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-20T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-21T09:00:00"),
+    notes: "Government call-up.",
+    document: new File([""], "military_orders.pdf"),
+    status: "Approved",
+    type: "Request",
   },
 ]);
 
@@ -303,5 +520,51 @@ const onSearch = () => {
 
 const onEdit = (record: AttendanceRecord) => {
   alert(`Editing record with ID: ${record.id}`);
+};
+
+const addNewRecord = () => {
+  form.value = {
+    typeOfReason: "",
+    reason: "",
+    newStartDateTime: new Date(),
+    newOfficeOpeningDateTime: new Date(),
+    newOfficeReEntryDateTime: new Date(),
+    newReturnWorkDateTime: new Date(),
+    notes: "",
+    document: {
+      type: Object,
+    },
+  };
+
+  popupVisible.value = true;
+};
+
+const addRecord = () => {
+  const lastId =
+    attendanceStore.records.length > 0
+      ? attendanceStore.records[attendanceStore.records.length - 1].id
+      : null;
+
+  const params: AttendanceRecord = {
+    id: lastId + 1,
+    typeOfReason: "Personal",
+    reason: "Family emergency",
+    newStartDateTime: new Date("2025-04-12T08:30:00"),
+    newOfficeOpeningDateTime: new Date("2025-04-18T09:00:00"),
+    newOfficeReEntryDateTime: new Date("2025-04-21T09:00:00"),
+    newReturnWorkDateTime: new Date("2025-04-22T09:00:00"),
+    notes: "Need time to resolve family matters.",
+    document: new File([""], "family_leave_doc.pdf"),
+    status: "Approved",
+    type: "Request",
+  };
+
+  const change: AttendanceRecord = {
+    ...form.value,
+    ...params,
+  };
+
+  attendanceStore.addRecord(change);
+  attendanceStore.loadRecords(attendanceStore.records);
 };
 </script>
