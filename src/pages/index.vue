@@ -79,12 +79,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+useHead({
+  title: "Attendance",
+});
 
+import { ref } from "vue";
 import { DxItem } from "devextreme-vue/data-grid";
 import { DxForm, DxSimpleItem } from "devextreme-vue/form";
 import DataGrid from "@/components/ui/DataGrid.vue";
 import type { AttendanceRecord } from "@/types/AttendanceRecord";
+import { useHead } from "nuxt/app";
 
 interface SearchForm {
   id: string;
