@@ -41,6 +41,7 @@
     <DxSearchPanel :visible="true" :width="240" />
     <DxPaging :page-size="10" />
     <DxPager :show-page-size-selector="true" :allowed-page-sizes="[10, 20, 50]" :show-info="true" />
+    <DxFilterRow :visible="true" />
     <DxColumn
       data-field="newStartDateTime"
       data-type="datetime"
@@ -87,6 +88,7 @@ import {
   DxPaging,
   DxPager,
   DxColumn,
+  DxFilterRow,
 } from "devextreme-vue/data-grid";
 import type { AttendanceRecord } from "@/types/Attendance";
 
