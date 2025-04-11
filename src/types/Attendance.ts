@@ -19,6 +19,7 @@ export interface SearchForm {
 }
 
 export interface Form {
+  id: number;
   typeOfReason: string;
   reason: string;
   newStartDateTime: Date;

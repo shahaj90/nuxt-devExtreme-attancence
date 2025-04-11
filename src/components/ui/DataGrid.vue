@@ -15,7 +15,7 @@
         :options="{
           icon: 'add',
           text: 'Add New Record',
-          onClick: onAddNewRecord,
+          onClick: addNewRecord,
         }"
       />
       <DxItem name="searchPanel" />
@@ -105,7 +105,7 @@ defineProps<{
 // Define event emitter
 const emit = defineEmits<{
   (e: "addNewRecord"): void;
-  (e: "onEdit"): void;
+  (e: "onEdit", record: AttendanceRecord): void;
 }>();
 
 const dataGridRef = ref<DxDataGrid | null>(null);
@@ -122,12 +122,11 @@ const actionCellTemplate = (
   cellElement.appendChild(button);
 };
 
-const onEdit = (record: AttendanceRecord) => {
-  emit("onEdit");
-  alert(`Editing record with ID: ${record.id}`);
+const onEdit = (record: AttendanceRecord): void => {
+  emit("onEdit", record);
 };
 
-const onAddNewRecord = (): void => {
+const addNewRecord = (): void => {
   emit("addNewRecord");
 };
 

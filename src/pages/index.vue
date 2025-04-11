@@ -49,8 +49,8 @@
       <h2 class="text-2xl font-semibold mb-4">List of Competency Owner Attendance Records</h2>
       <DataGrid
         :attendanceRecords="attendanceStore.records"
-        @add-new-record="addNewRecord"
-        @edit="onEdit"
+        @addNewRecord="addNewRecord"
+        @onEdit="onEdit"
       />
     </div>
 
@@ -205,6 +205,7 @@ import { useAttendanceStore } from "@/stores/attendance";
 import notify from "devextreme/ui/notify";
 
 const popupVisible = ref(false);
+const operationType = ref("Add");
 const attendanceStore = useAttendanceStore();
 
 onMounted(() => {
@@ -219,7 +220,7 @@ const saveButtonOptions = {
   icon: "save",
   class: "mt-4",
   onClick: () => {
-    addRecord();
+    addRecord(operationType.value);
   },
 };
 
@@ -535,7 +536,22 @@ const onSearch = () => {
 };
 
 const onEdit = (record: AttendanceRecord) => {
-  alert(`Editing record with ID: ${record.id}`);
+  console.log(record);
+
+  form.value = {
+    id: record.id,
+    typeOfReason: record.typeOfReason,
+    reason: record.reason,
+    newStartDateTime: record.newStartDateTime,
+    newOfficeOpeningDateTime: record.newOfficeOpeningDateTime,
+    newOfficeReEntryDateTime: record.newOfficeReEntryDateTime,
+    newReturnWorkDateTime: record.newReturnWorkDateTime,
+    notes: record.notes,
+    document: { type: Object },
+  };
+
+  operationType.value = "edit";
+  popupVisible.value = true;
 };
 
 const addNewRecord = () => {
@@ -552,25 +568,26 @@ const addNewRecord = () => {
     },
   };
 
+  operationType.value = "add";
   popupVisible.value = true;
 };
 
-const addRecord = () => {
+const addRecord = (type: string) => {
   const lastId =
     attendanceStore.records.length > 0
       ? attendanceStore.records[attendanceStore.records.length - 1].id
       : 0;
 
   const params: AttendanceRecord = {
-    id: lastId + 1,
+    id: type === "add" ? lastId + 1 : form.value.id,
     typeOfReason: "Personal",
     reason: "Family emergency",
-    newStartDateTime: new Date("2025-04-12T08:30:00"),
-    newOfficeOpeningDateTime: new Date("2025-04-18T09:00:00"),
-    newOfficeReEntryDateTime: new Date("2025-04-21T09:00:00"),
-    newReturnWorkDateTime: new Date("2025-04-22T09:00:00"),
-    notes: "Need time to resolve family matters.",
-    document: new File([""], "family_leave_doc.pdf"),
+    newStartDateTime: form.value.newStartDateTime,
+    newOfficeOpeningDateTime: form.value.newOfficeOpeningDateTime,
+    newOfficeReEntryDateTime: form.value.newOfficeReEntryDateTime,
+    newReturnWorkDateTime: form.value.newReturnWorkDateTime,
+    notes: form.value.notes,
+    document: form.value.document,
     status: "Approved",
     type: "Request",
   };
@@ -580,11 +597,18 @@ const addRecord = () => {
     ...params,
   };
 
-  attendanceStore.addRecord(change);
+  let message = "Attendance records loaded successfully and will notify to your supervisor.";
+  if (type === "add") {
+    attendanceStore.addRecord(change);
+  } else {
+    message = "Attendance records updated successfully and will notify to your supervisor.";
+    attendanceStore.updateRecord({ ...change, id: change.id });
+  }
+
   attendanceStore.records = [...attendanceStore.records];
   popupVisible.value = false;
   notify({
-    message: "Attendance records loaded successfully and will notify to your supervisor.",
+    message: message,
     type: "success",
     displayTime: 3000,
     width: 600,
