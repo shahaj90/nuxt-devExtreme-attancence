@@ -2,36 +2,33 @@
   <div class="p-4">
     <!-- Search Form -->
     <fieldset
-      class="border border-gray-300 rounded-lg p-4 mb-6 relative bg-white w-full max-w-7xl mx-auto"
+      class="border border-gray-300 rounded-lg p-4 mb-6 relative bg-white w-full max-w-5xl mx-auto"
     >
       <legend class="font-semibold text-lg px-2 ml-2">Attendance Record Search</legend>
       <DxForm
         :form-data="searchForm"
         label-location="top"
-        :col-count="2"
+        :col-count="3"
         :min-col-width="200"
         :align-item-labels="true"
         :show-colon-after-label="true"
-        class="search-form mb-4"
+        class="search-form mb-4 ml-[10em]"
       >
         <DxSimpleItem
-          data-field="id"
-          editor-type="dxTextBox"
-          :label="{ text: 'No. Kad Pengenalan' }"
-          :editor-options="{ stylingMode: 'outlined' }"
-        />
-        <DxSimpleItem
-          data-field="name"
-          editor-type="dxTextBox"
-          :label="{ text: 'Nama' }"
-          :editor-options="{ stylingMode: 'outlined' }"
-        />
-        <DxSimpleItem
-          data-field="display"
+          data-field="type"
           editor-type="dxSelectBox"
-          :label="{ text: 'Record Display' }"
+          :label="{ text: 'Type' }"
           :editor-options="{
-            items: ['Daily', 'Weekly'],
+            items: ['', 'Request', 'Leave'],
+            stylingMode: 'outlined',
+          }"
+        />
+        <DxSimpleItem
+          data-field="status"
+          editor-type="dxSelectBox"
+          :label="{ text: 'Status' }"
+          :editor-options="{
+            items: ['', 'Pending', 'Approved', 'Rejected'],
             stylingMode: 'outlined',
           }"
         />
@@ -249,9 +246,8 @@ const buttonOptions = {
 };
 
 const searchForm = ref<SearchForm>({
-  id: "",
-  name: "",
-  display: "",
+  type: "",
+  status: "",
 });
 
 const form = ref<Form>({
@@ -532,12 +528,31 @@ const attendanceRecords = ref<AttendanceRecord[]>([
 ]);
 
 const onSearch = () => {
-  console.log("Search triggered with:", searchForm.value);
+  const { status, type } = searchForm.value;
+  if (!status && !type) {
+    attendanceStore.loadRecords(attendanceRecords.value);
+    return;
+  }
+
+  const filtered = attendanceRecords.value.filter((record) => {
+    if (status && type) {
+      return (
+        record.status.toLowerCase() === status.toLowerCase() &&
+        record.type.toLowerCase() === type.toLowerCase()
+      );
+    } else if (status) {
+      return record.status.toLowerCase() === status.toLowerCase();
+    } else if (type) {
+      return record.type.toLowerCase() === type.toLowerCase();
+    } else {
+      return false;
+    }
+  });
+
+  attendanceStore.records = filtered;
 };
 
 const onEdit = (record: AttendanceRecord) => {
-  console.log(record);
-
   form.value = {
     id: record.id,
     typeOfReason: record.typeOfReason,

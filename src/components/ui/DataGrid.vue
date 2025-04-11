@@ -43,35 +43,27 @@
     <DxPager :show-page-size-selector="true" :allowed-page-sizes="[10, 20, 50]" :show-info="true" />
     <DxColumn
       data-field="newStartDateTime"
+      data-type="datetime"
+      :format="{ type: 'shortDateShortTime' }"
       caption="Date & Time Get to Start Work"
-      :format="{
-        type: 'date',
-        format: 'dd/MM/yyyy HH:mm',
-      }"
     />
     <DxColumn
       data-field="newOfficeOpeningDateTime"
+      data-type="datetime"
+      :format="{ type: 'shortDateShortTime' }"
       caption="Date & Time Open of Office"
-      :format="{
-        type: 'date',
-        format: 'dd/MM/yyyy HH:mm',
-      }"
     />
     <DxColumn
       data-field="newOfficeReEntryDateTime"
+      data-type="datetime"
+      :format="{ type: 'shortDateShortTime' }"
       caption="Date & Time After Break the Office"
-      :format="{
-        type: 'date',
-        format: 'dd/MM/yyyy HH:mm',
-      }"
     />
     <DxColumn
       data-field="newReturnWorkDateTime"
+      data-type="datetime"
+      :format="{ type: 'shortDateShortTime' }"
       caption="Date & Time to Return Work"
-      :format="{
-        type: 'date',
-        format: 'dd/MM/yyyy HH:mm',
-      }"
     />
     <DxColumn data-field="status" caption="Status" />
     <DxColumn data-field="type" caption="Type" />

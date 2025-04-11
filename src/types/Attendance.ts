@@ -13,9 +13,8 @@ export interface AttendanceRecord {
 }
 
 export interface SearchForm {
-  id: string;
-  name: string;
-  display: string;
+  type: string;
+  status: string;
 }
 
 export interface Form {
