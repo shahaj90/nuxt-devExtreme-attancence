@@ -202,14 +202,14 @@ import { useAttendanceStore } from "@/stores/attendance";
 import notify from "devextreme/ui/notify";
 
 const popupVisible = ref(false);
-const operationType = ref("Add");
+const operationType = ref("add");
 const attendanceStore = useAttendanceStore();
 
 onMounted(() => {
   attendanceStore.loadRecords(attendanceRecords.value);
 });
 
-const saveButtonOptions = {
+const saveButtonOptions = ref({
   text: "Save",
   useSubmitBehavior: true,
   type: "default",
@@ -219,7 +219,7 @@ const saveButtonOptions = {
   onClick: () => {
     addRecord(operationType.value);
   },
-};
+});
 
 const closeButtonOptions = {
   text: "Cancel",
@@ -553,6 +553,7 @@ const onSearch = () => {
 };
 
 const onEdit = (record: AttendanceRecord) => {
+  saveButtonOptions.value.text = "Update";
   form.value = {
     id: record.id,
     typeOfReason: record.typeOfReason,
@@ -565,11 +566,11 @@ const onEdit = (record: AttendanceRecord) => {
     document: { type: Object },
   };
 
-  operationType.value = "edit";
   popupVisible.value = true;
 };
 
 const addNewRecord = () => {
+  saveButtonOptions.value.text = "Save";
   form.value = {
     typeOfReason: "",
     reason: "",
