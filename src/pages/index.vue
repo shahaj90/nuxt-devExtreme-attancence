@@ -82,12 +82,14 @@
               editor-type="dxTextBox"
               :label="{ text: 'Types Of Reasons' }"
               :editor-options="{ stylingMode: 'outlined' }"
+              :validation-rules="[{ type: 'required', message: 'Type of reason is required' }]"
             />
             <DxSimpleItem
               data-field="reason"
               editor-type="dxTextBox"
               :label="{ text: 'Reason' }"
               :editor-options="{ stylingMode: 'outlined' }"
+              :validation-rules="[{ type: 'required', message: 'Reason is required' }]"
             />
             <DxSimpleItem
               data-field="newStartDateTime"
@@ -98,6 +100,7 @@
                 displayFormat: 'dd/MM/yyyy HH:mm',
                 stylingMode: 'outlined',
               }"
+              :validation-rules="[{ type: 'required', message: 'Start date & time is required' }]"
             />
             <DxSimpleItem
               data-field="newOfficeOpeningDateTime"
@@ -108,6 +111,9 @@
                 displayFormat: 'dd/MM/yyyy HH:mm',
                 stylingMode: 'outlined',
               }"
+              :validation-rules="[
+                { type: 'required', message: 'Office opening date & time is required' },
+              ]"
             />
             <DxSimpleItem
               data-field="newOfficeReEntryDateTime"
@@ -118,6 +124,9 @@
                 displayFormat: 'dd/MM/yyyy HH:mm',
                 stylingMode: 'outlined',
               }"
+              :validation-rules="[
+                { type: 'required', message: 'Re-entry date & time is required' },
+              ]"
             />
             <DxSimpleItem
               data-field="newReturnWorkDateTime"
@@ -128,9 +137,15 @@
                 displayFormat: 'dd/MM/yyyy HH:mm',
                 stylingMode: 'outlined',
               }"
+              :validation-rules="[
+                { type: 'required', message: 'Return to work date & time is required' },
+              ]"
             />
-            <DxTextArea data-field="notes" :input-attr="{ 'aria-label': 'Notes' }" />
-
+            <DxTextArea
+              data-field="notes"
+              :input-attr="{ 'aria-label': 'Notes' }"
+              :validation-rules="[{ type: 'required', message: 'Notes are required' }]"
+            />
             <DxSimpleItem
               data-field="notes"
               editor-type="dxTextArea"
@@ -139,6 +154,7 @@
                 stylingMode: 'outlined',
               }"
               :input-attr="{ 'aria-label': 'Notes' }"
+              :validation-rules="[{ type: 'required', message: 'Notes are required' }]"
             />
             <DxFileUploader accept="image/*"> </DxFileUploader>
             <DxSimpleItem
@@ -152,7 +168,6 @@
                 accept: '*',
               }"
             />
-
             <DxItem
               :button-options="saveButtonOptions"
               item-type="button"
@@ -187,6 +202,7 @@ import { DxPopup } from "devextreme-vue/popup";
 import { DxTextArea } from "devextreme-vue/text-area";
 import { DxFileUploader } from "devextreme-vue/file-uploader";
 import { useAttendanceStore } from "@/stores/attendance";
+import notify from "devextreme/ui/notify";
 
 const popupVisible = ref(false);
 const attendanceStore = useAttendanceStore();
@@ -543,7 +559,7 @@ const addRecord = () => {
   const lastId =
     attendanceStore.records.length > 0
       ? attendanceStore.records[attendanceStore.records.length - 1].id
-      : null;
+      : 0;
 
   const params: AttendanceRecord = {
     id: lastId + 1,
@@ -565,6 +581,18 @@ const addRecord = () => {
   };
 
   attendanceStore.addRecord(change);
-  attendanceStore.loadRecords(attendanceStore.records);
+  attendanceStore.records = [...attendanceStore.records];
+  popupVisible.value = false;
+  notify({
+    message: "Attendance records loaded successfully and will notify to your supervisor.",
+    type: "success",
+    displayTime: 3000,
+    width: 600,
+    position: {
+      my: "top center",
+      at: "top center",
+      of: window,
+    },
+  });
 };
 </script>

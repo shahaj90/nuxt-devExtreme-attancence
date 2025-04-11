@@ -10,7 +10,7 @@ export const useAttendanceStore = defineStore("attendance", () => {
   }
 
   function addRecord(record: AttendanceRecord) {
-    records.value.push({ ...record, id: Date.now() }); // Generate unique ID
+    records.value.push({ ...record, id: Date.now() });
   }
 
   function updateRecord(updated: AttendanceRecord) {
