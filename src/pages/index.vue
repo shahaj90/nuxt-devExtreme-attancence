@@ -153,18 +153,22 @@
               :input-attr="{ 'aria-label': 'Notes' }"
               :validation-rules="[{ type: 'required', message: 'Notes are required' }]"
             />
-            <DxFileUploader accept="image/*"> </DxFileUploader>
+            <DxFileUploader> </DxFileUploader>
             <DxSimpleItem
               data-field="file"
               editor-type="dxFileUploader"
               :editor-options="{
                 selectButtonText: 'Select file',
                 uploadButtonText: 'Upload file',
-                showFileList: false,
+                showFileList: true,
                 multiple: false,
                 accept: '*',
+                uploadMode: 'useButtons',
+                uploadUrl: '/api/upload',
+                onUploaded: handleUploadSuccess,
               }"
             />
+
             <DxItem
               :button-options="saveButtonOptions"
               item-type="button"
@@ -634,5 +638,16 @@ const addRecord = (type: string) => {
       of: window,
     },
   });
+};
+
+const handleUploadSuccess = (e) => {
+  const response = JSON.parse(e.request.response);
+
+  if (response?.filename) {
+    console.log("Uploaded filename:", response.filename);
+    form.value.document = response.filename;
+  }
+
+  console.log(form.value);
 };
 </script>

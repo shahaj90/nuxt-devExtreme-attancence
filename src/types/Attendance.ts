@@ -7,7 +7,8 @@ export interface AttendanceRecord {
   newOfficeReEntryDateTime: Date;
   newReturnWorkDateTime: Date;
   notes: string;
-  document: File;
+  document: string;
+  file?: File;
   status: string;
   type: string;
 }
