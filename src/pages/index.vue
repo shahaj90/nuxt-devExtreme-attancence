@@ -15,18 +15,18 @@
         class="search-form mb-4 ml-[10em]"
       >
         <DxSimpleItem
-          data-field="{{ $t('Type') }}"
+          data-field="type"
           editor-type="dxSelectBox"
-          :label="{ text: 'Type' }"
+          :label="{ text: $t('Type') }"
           :editor-options="{
             items: ['', 'Request', 'Leave'],
             stylingMode: 'outlined',
           }"
         />
         <DxSimpleItem
-          data-field="{{ $t('Status') }}"
+          data-field="status"
           editor-type="dxSelectBox"
-          :label="{ text: 'Status' }"
+          :label="{ text: $t('Status') }"
           :editor-options="{
             items: ['', 'Pending', 'Approved', 'Rejected'],
             stylingMode: 'outlined',
