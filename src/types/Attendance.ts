@@ -27,5 +27,6 @@ export interface Form {
   newOfficeReEntryDateTime: Date;
   newReturnWorkDateTime: Date;
   notes: string;
-  document: File;
+  document: string;
+  file: File;
 }

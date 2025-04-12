@@ -4,7 +4,7 @@
     <fieldset
       class="border border-gray-300 rounded-lg p-4 mb-6 relative bg-white w-full max-w-5xl mx-auto"
     >
-      <legend class="font-semibold text-lg px-2 ml-2">Attendance Record Search</legend>
+      <legend class="font-semibold text-lg px-2 ml-2">{{ $t("Search record") }}</legend>
       <DxForm
         :form-data="searchForm"
         label-location="top"
@@ -15,7 +15,7 @@
         class="search-form mb-4 ml-[10em]"
       >
         <DxSimpleItem
-          data-field="type"
+          data-field="{{ $t('Type') }}"
           editor-type="dxSelectBox"
           :label="{ text: 'Type' }"
           :editor-options="{
@@ -24,7 +24,7 @@
           }"
         />
         <DxSimpleItem
-          data-field="status"
+          data-field="{{ $t('Status') }}"
           editor-type="dxSelectBox"
           :label="{ text: 'Status' }"
           :editor-options="{
@@ -64,8 +64,9 @@
         <fieldset
           class="border border-gray-300 rounded-lg p-4 mb-6 relative bg-white w-full max-w-7xl mx-auto"
         >
-          <legend class="font-semibold text-lg px-2 ml-2">Attendance Record Search</legend>
+          <legend class="font-semibold text-lg px-2 ml-2">Attendance Record</legend>
           <DxForm
+            ref="formRef"
             :form-data="form"
             label-location="top"
             :col-count="2"
@@ -162,13 +163,12 @@
                 uploadButtonText: 'Upload file',
                 showFileList: true,
                 multiple: false,
-                accept: '*',
+                accept: 'image/*',
                 uploadMode: 'useButtons',
                 uploadUrl: '/api/upload',
                 onUploaded: handleUploadSuccess,
               }"
             />
-
             <DxItem
               :button-options="saveButtonOptions"
               item-type="button"
@@ -182,6 +182,15 @@
               horizontal-alignment="right"
             />
           </DxForm>
+
+          <img
+            v-if="form.document"
+            :src="`/uploads/${form.document}`"
+            alt="Uploaded file"
+            width="200"
+            height="200"
+            class="mx-auto"
+          />
         </fieldset>
       </template>
     </DxPopup>
@@ -204,6 +213,9 @@ import { DxTextArea } from "devextreme-vue/text-area";
 import { DxFileUploader } from "devextreme-vue/file-uploader";
 import { useAttendanceStore } from "@/stores/attendance";
 import notify from "devextreme/ui/notify";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const popupVisible = ref(false);
 const operationType = ref("add");
@@ -238,7 +250,7 @@ const closeButtonOptions = {
 };
 
 const buttonOptions = {
-  text: "Search",
+  text: t("Search"),
   useSubmitBehavior: true,
   type: "default",
   stylingMode: "contained",
@@ -262,10 +274,8 @@ const form = ref<Form>({
   newOfficeReEntryDateTime: new Date(),
   newReturnWorkDateTime: new Date(),
   notes: "",
-  document: {
-    type: Object,
-    default: () => ({}) as File,
-  },
+  document: "",
+  file: "",
 });
 
 const attendanceRecords = ref<AttendanceRecord[]>([
@@ -278,7 +288,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-25T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-26T09:00:00"),
     notes: "Doctor advised extended rest.",
-    document: new File([""], "medical_report.pdf"),
+    document: "",
     status: "Pending",
     type: "Request",
   },
@@ -291,7 +301,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-21T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-22T09:00:00"),
     notes: "Need time to resolve family matters.",
-    document: new File([""], "family_leave_doc.pdf"),
+    document: "",
     status: "Approved",
     type: "Request",
   },
@@ -304,7 +314,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-19T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-20T09:00:00"),
     notes: "Awaiting logistics completion.",
-    document: new File([""], "relocation_proof.pdf"),
+    document: "",
     status: "Pending",
     type: "Request",
   },
@@ -317,7 +327,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-15T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-16T09:00:00"),
     notes: "Traveling out of country.",
-    document: new File([""], "bereavement_doc.pdf"),
+    document: "",
     status: "Approved",
     type: "Request",
   },
@@ -330,7 +340,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-18T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-19T09:00:00"),
     notes: "Recommendation from therapist.",
-    document: new File([""], "mental_health_note.pdf"),
+    document: "",
     status: "Pending",
     type: "Request",
   },
@@ -343,7 +353,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-30T09:00:00"),
     newReturnWorkDateTime: new Date("2025-05-01T09:00:00"),
     notes: "Trip with family.",
-    document: new File([""], "vacation_plan.pdf"),
+    document: "",
     status: "Approved",
     type: "Leave",
   },
@@ -356,7 +366,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-15T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-16T09:00:00"),
     notes: "Under isolation.",
-    document: new File([""], "covid_positive_report.pdf"),
+    document: "",
     status: "Pending",
     type: "Request",
   },
@@ -369,7 +379,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-24T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-25T09:00:00"),
     notes: "Maternity leave extension.",
-    document: new File([""], "childcare_letter.pdf"),
+    document: "",
     status: "Approved",
     type: "Leave",
   },
@@ -382,7 +392,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-18T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-19T09:00:00"),
     notes: "Certificate course for upskilling.",
-    document: new File([""], "course_enrollment.pdf"),
+    document: "",
     status: "Pending",
     type: "Request",
   },
@@ -395,7 +405,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-25T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-26T09:00:00"),
     notes: "Requested wedding leave.",
-    document: new File([""], "wedding_invitation.pdf"),
+    document: "",
     status: "Approved",
     type: "Leave",
   },
@@ -408,7 +418,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-12T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-13T09:00:00"),
     notes: "Legal obligation.",
-    document: new File([""], "court_notice.pdf"),
+    document: "",
     status: "Pending",
     type: "Request",
   },
@@ -421,7 +431,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-15T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-16T09:00:00"),
     notes: "Travel plans confirmed.",
-    document: new File([""], "visa_confirmation.pdf"),
+    document: "",
     status: "Approved",
     type: "Request",
   },
@@ -434,7 +444,7 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-10T09:00:00"),
     newReturnWorkDateTime: new Date("2025-04-11T09:00:00"),
     notes: "Recovery needed.",
-    document: new File([""], "dental_surgery_note.pdf"),
+    document: "",
     status: "Approved",
     type: "Request",
   },
@@ -447,87 +457,9 @@ const attendanceRecords = ref<AttendanceRecord[]>([
     newOfficeReEntryDateTime: new Date("2025-04-30T09:00:00"),
     newReturnWorkDateTime: new Date("2025-05-01T09:00:00"),
     notes: "Spiritual commitment.",
-    document: new File([""], "pilgrimage_letter.pdf"),
+    document: "",
     status: "Pending",
     type: "Leave",
-  },
-  {
-    id: 15,
-    typeOfReason: "Personal",
-    reason: "House renovation",
-    newStartDateTime: new Date("2025-04-09T09:00:00"),
-    newOfficeOpeningDateTime: new Date("2025-04-16T09:00:00"),
-    newOfficeReEntryDateTime: new Date("2025-04-20T09:00:00"),
-    newReturnWorkDateTime: new Date("2025-04-21T09:00:00"),
-    notes: "Noise disruption at home.",
-    document: new File([""], "renovation_invoice.pdf"),
-    status: "Approved",
-    type: "Request",
-  },
-  {
-    id: 16,
-    typeOfReason: "Weather",
-    reason: "Flooding in area",
-    newStartDateTime: new Date("2025-04-01T09:00:00"),
-    newOfficeOpeningDateTime: new Date("2025-04-06T09:00:00"),
-    newOfficeReEntryDateTime: new Date("2025-04-10T09:00:00"),
-    newReturnWorkDateTime: new Date("2025-04-11T09:00:00"),
-    notes: "Unsafe commute.",
-    document: new File([""], "weather_alert.pdf"),
-    status: "Approved",
-    type: "Request",
-  },
-  {
-    id: 17,
-    typeOfReason: "Transport",
-    reason: "Vehicle breakdown",
-    newStartDateTime: new Date("2025-04-02T09:00:00"),
-    newOfficeOpeningDateTime: new Date("2025-04-07T09:00:00"),
-    newOfficeReEntryDateTime: new Date("2025-04-09T09:00:00"),
-    newReturnWorkDateTime: new Date("2025-04-10T09:00:00"),
-    notes: "Awaiting repairs.",
-    document: new File([""], "repair_receipt.pdf"),
-    status: "Pending",
-    type: "Request",
-  },
-  {
-    id: 18,
-    typeOfReason: "Other",
-    reason: "Internet outage",
-    newStartDateTime: new Date("2025-04-03T09:00:00"),
-    newOfficeOpeningDateTime: new Date("2025-04-08T09:00:00"),
-    newOfficeReEntryDateTime: new Date("2025-04-10T09:00:00"),
-    newReturnWorkDateTime: new Date("2025-04-11T09:00:00"),
-    notes: "Network issues at home.",
-    document: new File([""], "outage_report.pdf"),
-    status: "Approved",
-    type: "Request",
-  },
-  {
-    id: 19,
-    typeOfReason: "Caregiving",
-    reason: "Taking care of elderly parent",
-    newStartDateTime: new Date("2025-04-06T09:00:00"),
-    newOfficeOpeningDateTime: new Date("2025-04-13T09:00:00"),
-    newOfficeReEntryDateTime: new Date("2025-04-17T09:00:00"),
-    newReturnWorkDateTime: new Date("2025-04-18T09:00:00"),
-    notes: "Temporary caregiver unwell.",
-    document: new File([""], "caregiving_note.pdf"),
-    status: "Pending",
-    type: "Request",
-  },
-  {
-    id: 20,
-    typeOfReason: "Military",
-    reason: "Reservist duty",
-    newStartDateTime: new Date("2025-04-05T09:00:00"),
-    newOfficeOpeningDateTime: new Date("2025-04-15T09:00:00"),
-    newOfficeReEntryDateTime: new Date("2025-04-20T09:00:00"),
-    newReturnWorkDateTime: new Date("2025-04-21T09:00:00"),
-    notes: "Government call-up.",
-    document: new File([""], "military_orders.pdf"),
-    status: "Approved",
-    type: "Request",
   },
 ]);
 
@@ -567,7 +499,7 @@ const onEdit = (record: AttendanceRecord) => {
     newOfficeReEntryDateTime: record.newOfficeReEntryDateTime,
     newReturnWorkDateTime: record.newReturnWorkDateTime,
     notes: record.notes,
-    document: { type: Object },
+    document: record.document,
   };
 
   popupVisible.value = true;
@@ -583,16 +515,20 @@ const addNewRecord = () => {
     newOfficeReEntryDateTime: new Date(),
     newReturnWorkDateTime: new Date(),
     notes: "",
-    document: {
-      type: Object,
-    },
+    document: "",
   };
 
   operationType.value = "add";
   popupVisible.value = true;
 };
 
+const formRef = ref(null);
 const addRecord = (type: string) => {
+  const result = formRef.value?.instance?.validate();
+  if (!result?.isValid) {
+    return;
+  }
+
   const lastId =
     attendanceStore.records.length > 0
       ? attendanceStore.records[attendanceStore.records.length - 1].id
@@ -617,6 +553,8 @@ const addRecord = (type: string) => {
     ...params,
   };
 
+  console.log(change);
+
   let message = "Attendance records loaded successfully and will notify to your supervisor.";
   if (type === "add") {
     attendanceStore.addRecord(change);
@@ -640,14 +578,12 @@ const addRecord = (type: string) => {
   });
 };
 
-const handleUploadSuccess = (e) => {
+const handleUploadSuccess = (e: any) => {
   const response = JSON.parse(e.request.response);
 
   if (response?.filename) {
-    console.log("Uploaded filename:", response.filename);
     form.value.document = response.filename;
   }
-
-  console.log(form.value);
+  console.log(form.value.document);
 };
 </script>
